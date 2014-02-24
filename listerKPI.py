@@ -7,6 +7,7 @@
 """
 #imported operator for sorting of dictionary for po output
 import operator
+#imported csv for file handeling
 import csv
 
 #Make sure file is in same directory as script.
@@ -133,10 +134,12 @@ class ListerDetail(object):
         for rows in self.datarendered:
             currentvalue = weeksPOdict[rows[0]]
             weeksPOdict[rows[0]] = currentvalue+1
+        weeksPoDictSorted = sorted(weeksPOdict.iteritems(), key=operator.itemgetter(1))
         print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         print " Finished writing PO data to output file "
         print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        return [weeksPOdict.keys(), weeksPOdict.values()]
+        #return [weeksPoDictSorted.keys(), weeksPoDictSorted.values()]
+        return [("PO", "# of items")]+weeksPoDictSorted[::-1]
 
     def listedbystockweekly(self):
         weekstockdict = {}
