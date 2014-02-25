@@ -51,7 +51,7 @@ def masterWriteToCsv(objectlist):
         #function should be tested further for runtime preformance
         if "San Diego" in lister.listerLocation:
             print lister.name
-            writeCsvFile(outfile, [[lister.name]+datatocsv], [lister.listedbyweek()], [lister.errorratedata(),lister.listedbystockweekly(),list([" "])])
+            writeCsvFile(outfile, [[lister.name]+datatocsv], [lister.listedbyweek()], [lister.errorratedata(),lister.listedbystockweekly(), lister.POdatabylister(),list([" "])])
             print "new lister data added to file!"
     writeCsvFile(outfile, [""], [masterobj.POtotalnumberforall()], [""])
     print "Completed lister detail... see output file for results"
@@ -126,20 +126,33 @@ class ListerDetail(object):
         self.posAllWorkedOn = set([rows[0] for rows in datarendered])
         self.posListerworkedOn = set([rows[0] for rows in datarendered if self.name in rows])
         self.stockTypesWorkedOn = set([rows[1] for rows in self.datarendered1])
+    
+    def POdatabylister(self):
+        listerPOdict = {}
+        for item in self.posListerworkedOn:
+            listerPOdict[item] = 0
+        for rows in self.datarendered:
+            if rows[18] == self.name:
+                currentvalue = listerPOdict[rows[0]]
+                listerPOdict[rows[0]] = currentvalue + int(rows[4])
+        listerPOdictSorted = sorted(listerPOdict.iteritems(), key= operator.itemgetter(1))
+        return [("PO","Items Listed")]+listerPOdictSorted[::-1]
+
             
     def POtotalnumberforall(self):
         weeksPOdict = {}
         for item in self.posAllWorkedOn:
             weeksPOdict[item] = 0
         for rows in self.datarendered:
-            currentvalue = weeksPOdict[rows[0]]
-            weeksPOdict[rows[0]] = currentvalue+1
-        weeksPoDictSorted = sorted(weeksPOdict.iteritems(), key=operator.itemgetter(1))
+            if rows[19] == "San Diego":
+                currentvalue = weeksPOdict[rows[0]]
+                weeksPOdict[rows[0]] = currentvalue+int(rows[4])
+        weeksPOdictSorted = sorted(weeksPOdict.iteritems(), key=operator.itemgetter(1))
         print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         print " Finished writing PO data to output file "
         print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         #return [weeksPoDictSorted.keys(), weeksPoDictSorted.values()]
-        return [("PO", "# of items")]+weeksPoDictSorted[::-1]
+        return [("PO", "# of items")]+weeksPOdictSorted[::-1]
 
     def listedbystockweekly(self):
         weekstockdict = {}
@@ -148,8 +161,8 @@ class ListerDetail(object):
         for rows in self.datarendered:
             if self.name in rows[18]:
                 currentvalue = weekstockdict[rows[1]]
-                weekstockdict[rows[1]] = currentvalue+1
-        return [weekstockdict.keys()[:], weekstockdict.values()]
+                weekstockdict[rows[1]] = currentvalue+int(rows[4])
+        return [weekstockdict.keys(), weekstockdict.values()]
 
     def errorbylister(self):
         """
@@ -310,7 +323,8 @@ class ListerDetail(object):
                         stockTypeDict[rows[1]] = 1
                     else:
                         current_val = stockTypeDict[rows[1]]
-                        stockTypeDict[rows[1]] = current_val+1
+                        stockTypeDict[rows[1]] = current_val+int(rows[4])
+                        #print rows[4]
             if self.name in rows[18]:
                 if date in rows[3]:
                     if "Boots" in rows[11]:
